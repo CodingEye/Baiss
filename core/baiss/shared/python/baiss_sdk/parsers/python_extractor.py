@@ -25,8 +25,8 @@ class PythonExtractor:
 	def is_function_start(pos: int, text: str, length: int):
 		if (pos > 0) and not (text[pos - 1].isspace()):
 			return False
-		if text[pos:pos + 4] == "async":
-			pos += 4
+		if text[pos:pos + 5] == "async":
+			pos += 5
 		elif text[pos:pos + 3] == "def":
 			pos += 3
 		else:
