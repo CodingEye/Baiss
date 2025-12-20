@@ -376,7 +376,6 @@ async def get_pre_chat(websocket: WebSocket):
 
         # Prepare the payload for llama server
         payload = {
-            "messages": all_messages,
             "stream": True,
             "reasoning_format": "auto",
             "temperature": 0.3,
@@ -409,6 +408,7 @@ async def get_pre_chat(websocket: WebSocket):
         should_continue = True  # Flag to control loop continuation
         
         while i < MAX_ATTEMPTS and should_continue:
+            payload["messages"] = all_messages
             content_buffer = ""
             should_continue = False  # Reset - only continue if we have more work
 
@@ -456,7 +456,7 @@ async def get_pre_chat(websocket: WebSocket):
             extract_python = PythonExtractor(content_buffer).functions
 
             if extract_python:
-                logging.info(f"Extracted Python functions/classes/methods: {extract_python}")
+                # logging.info(f"Extracted Python functions/classes/methods: {extract_python}")
 
                 for attempts in range(3):
                     try:
@@ -471,7 +471,7 @@ async def get_pre_chat(websocket: WebSocket):
                         code_to_execute = str(extract_python[0]["body"]).rstrip() + "\n\nasyncio.run(main())\n"
                         logger.info(f"extracted code {code_to_execute}")
                         exec_result = sandbox.execute(code_to_execute, timeout=30)
-                        logging.info(f"Sandbox execution result: {exec_result}")
+                        # logging.info(f"Sandbox execution result: {exec_result}")
                         if exec_result.get("success"):
                             exec_data = exec_result.get("stdout")
                             if exec_data:
@@ -484,8 +484,7 @@ async def get_pre_chat(websocket: WebSocket):
                                     "role": "user",
                                     "content": f"The code executed successfully with no result."
                                 })
-                            # Update payload and continue to get AI response
-                            payload["messages"] = all_messages
+
                             await websocket.send_json({
                                     "success" : True,
                                     "error"   : None,
@@ -498,14 +497,11 @@ async def get_pre_chat(websocket: WebSocket):
                             break
                         else:
                             exec_error = exec_result.get("error")
-                            logging.error(f"Sandbox execution error: {exec_error}")
+                            # logging.error(f"Sandbox execution error: {exec_error}")
                             all_messages.append({
                                 "role": "user",
                                 "content": f"The code execution failed, here is the error: {exec_error}, fix it and try again.\n"
                             })
-                            
-                            # Update payload and continue to let AI fix the error
-                            payload["messages"] = all_messages
 
 
                             await websocket.send_json({
@@ -517,11 +513,11 @@ async def get_pre_chat(websocket: WebSocket):
                                     }
                                 })
                             should_continue = True
-                            time.sleep(1)  # Brief pause before retrying
+                            time.sleep(1)
                             break
                     except Exception as e:
                         logging.error(f"Sandbox execution error on attempt {attempts + 1}: {e}", exc_info=True)
-                        time.sleep(1)  # Brief pause before retrying
+                        time.sleep(1)
 
 
             if len(extract_tools) > 0:
@@ -544,15 +540,12 @@ async def get_pre_chat(websocket: WebSocket):
                                     "role": "user",
                                     "content": f"<search_results>{str(results)}</search_results>"
                                 })
-                                # Update payload and continue to get AI response with search results
-                                payload["messages"] = all_messages
                                 should_continue = True
                             else:
                                 all_messages.append({
                                     "role": "user",
                                     "content": "<search_results>[]</search_results>"
                                 })
-                                payload["messages"] = all_messages
                                 should_continue = True
                         else:
                             logging.info("No search tool found in extracted tools.")
@@ -563,7 +556,6 @@ async def get_pre_chat(websocket: WebSocket):
                         "role": "user",
                         "content": "<search_results>[]</search_results>"
                     })
-                    payload["messages"] = all_messages
                     should_continue = True
             # else: no tools/code found, should_continue stays False, loop ends naturally
             
