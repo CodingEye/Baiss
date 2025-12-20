@@ -910,6 +910,7 @@
                                         <TextBlock Text="Update Frequency" FontSize="13.4" FontWeight="SemiBold" />
                                         <ComboBox ItemsSource="{Binding ScheduleOptions}"
                                                   SelectedItem="{Binding SelectedScheduleOption}"
+                                                  IsEnabled="{Binding TreeStructureScheduleEnabled}"
                                                   HorizontalAlignment="Stretch">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate>

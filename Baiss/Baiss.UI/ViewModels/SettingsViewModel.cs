@@ -310,6 +310,12 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         get => _selectedScheduleOption;
         set
         {
+            // if (!CanEnableSchedule)
+            // {
+            //     OnPropertyChanged(nameof(SelectedScheduleOption));
+            //     return;
+            // }
+
             if (SetProperty(ref _selectedScheduleOption, value) && value != null)
             {
                 TreeStructureSchedule = value.CronExpression;
@@ -334,6 +340,12 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
         get => _treeStructureScheduleEnabled;
         set
         {
+            // if (!CanEnableSchedule && value)
+            // {
+            //     OnPropertyChanged(nameof(TreeStructureScheduleEnabled));
+            //     return;
+            // }
+
             if (SetProperty(ref _treeStructureScheduleEnabled, value))
             {
                 HasScheduleChanges = true;
