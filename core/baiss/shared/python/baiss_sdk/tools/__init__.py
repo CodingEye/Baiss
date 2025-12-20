@@ -31,7 +31,7 @@ class allTools:
         self.url_embedding    = url_embedding
 
 
-    async def search_local_documents(self, query: str, k: int = 5, search_type="hybrid") -> list[dict[str, Any]]:
+    async def searchlocaldocuments(self, query: str, k: int = 5, search_type="hybrid") -> list[dict[str, Any]]:
         """
         """
         if self.url_embedding is None:
@@ -117,10 +117,10 @@ if __name__ == "__main__":
     sandbox = PythonSandbox()
 
     sandbox.add_tool_reference(
-        name="search_local_documents",
+        name="searchlocaldocuments",
         module_path="baiss_sdk.tools",
         class_name="allTools",
-        method_name="search_local_documents",
+        method_name="searchlocaldocuments",
         init_kwargs={"url_embedding": "http://127.0.0.1:8081"}
     )
 
@@ -128,7 +128,7 @@ if __name__ == "__main__":
 import asyncio
 
 async def main():
-    result = await search_local_documents(query="pokemon")
+    result = await searchlocaldocuments(query="pokemon")
     print(json.dumps(result, indent=2))
 
 asyncio.run(main())
