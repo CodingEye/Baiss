@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Local development server for Bedrock API
+Local development server for Baiss API
 Run this script to test the FastAPI application locally
 """
 

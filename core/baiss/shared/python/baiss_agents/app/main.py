@@ -40,8 +40,8 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI app with default values
 app = FastAPI(
-    title="Bedrock API",
-    description="AI-powered API using AWS Bedrock",
+    title="Baiss API",
+    description="AI-powered API using Baiss",
     version="0.1.0",
     lifespan=lifespan,
     root_path="/ai"
@@ -70,7 +70,7 @@ async def root() -> Dict[str, str]:
         }
     except RuntimeError:
         return {
-            "message": "Welcome to Bedrock API",
+            "message": "Welcome to Baiss API",
             "version": "0.1.0",
             "docs_url": "/docs"
         }

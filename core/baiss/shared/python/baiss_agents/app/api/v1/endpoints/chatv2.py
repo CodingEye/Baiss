@@ -445,7 +445,28 @@ async def get_pre_chat(websocket: WebSocket):
                                             content_buffer += content
 
                                 data = convert_stream_chunks(chunk_data)
+                                
+                                # Filter out <code_execution> tags from the response
+                                should_send = True
                                 if data["response"]["choices"]:
+                                    for choice in data["response"]["choices"]:
+                                        for msg in choice.get("messages", []):
+                                            for content_item in msg.get("content", []):
+                                                if content_item.get("type") == "text":
+                                                    text = content_item.get("text", "")
+                                                    # Skip if text contains code_execution tags
+                                                    if "<code_execution>" in text or "</code_execution>" in text:
+                                                        should_send = False
+                                                    # Also filter out the tags from partial matches
+                                                    elif text.strip() in ["<code", "<code_", "<code_e", "<code_ex", 
+                                                                          "<code_exe", "<code_exec", "<code_execu", 
+                                                                          "<code_execut", "<code_executi", "<code_executio",
+                                                                          "<code_execution>", "</code", "</code_", "</code_e", "</code_ex",
+                                                                          "</code_exe", "</code_exec", "</code_execu",
+                                                                          "</code_execut", "</code_executi", "</code_execution>"]:
+                                                        should_send = False
+                                
+                                if data["response"]["choices"] and should_send:
                                     logging.info(f"Streaming chunk: {data}")
                                     await websocket.send_json(data)
                             except json.JSONDecodeError:
@@ -477,7 +498,7 @@ async def get_pre_chat(websocket: WebSocket):
                             if exec_data:
                                 all_messages.append({
                                     "role": "user",
-                                    "content": f"The code executed successfully with result: {str(exec_data)}"
+                                    "content": f"<code_execution_result>{str(exec_data)}</code_execution_result>"
                                 })
                             else: 
                                 all_messages.append({
@@ -500,7 +521,7 @@ async def get_pre_chat(websocket: WebSocket):
                             # logging.error(f"Sandbox execution error: {exec_error}")
                             all_messages.append({
                                 "role": "user",
-                                "content": f"The code execution failed, here is the error: {exec_error}, fix it and try again.\n"
+                                "content": f"<code_execution_result> {exec_error} </code_execution_result>"
                             })
 
 
