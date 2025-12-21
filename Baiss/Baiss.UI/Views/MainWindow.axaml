@@ -251,8 +251,7 @@
             <!--  Main Content Grid - Hidden when collapsed  -->
             <Grid
                 x:Name="Root"
-                IsVisible="{Binding !IsCollapsed}"
-                PointerPressed="Root_PointerPressed">
+                IsVisible="{Binding !IsCollapsed}">
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
