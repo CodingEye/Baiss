@@ -681,7 +681,7 @@
                             <ScrollViewer
                                 x:Name="ChatScrollViewer"
                                 Grid.Row="0"
-                                Margin="0,40,10,0"
+                                Margin="0,40,20,0"
                                 HorizontalScrollBarVisibility="Disabled"
                                 VerticalScrollBarVisibility="Auto"
                                 IsVisible="{Binding Messages.Count, Converter={StaticResource NonZeroToBoolConverter}}">
@@ -698,10 +698,10 @@
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
 
-                                            <StackPanel Spacing="5" HorizontalAlignment="Stretch">
+                                            <StackPanel Spacing="2" HorizontalAlignment="Stretch">
                                                 <Border
                                                     x:Name="Bubble"
-                                                    Margin="0,5,0,5"
+                                                    Margin="0,5,15,0"
                                                     HorizontalAlignment="{Binding IsMine, Converter={StaticResource MessageAlignmentConverter}}"
                                                     Background="{Binding IsMine, Converter={StaticResource MessageBackgroundConverter}}"
                                                     CornerRadius="10"
@@ -1025,7 +1025,7 @@
                                                 <!-- Copy Button (below message) - only visible when message is complete -->
                                                 <Button
                                                     Height="24"
-                                                    Margin="20,0,10,0"
+                                                    Margin="45,0,10,0"
                                                     Padding="4,2"
                                                     HorizontalAlignment="{Binding IsMine, Converter={StaticResource CopyButtonAlignmentConverter}}"
                                                     Background="Transparent"

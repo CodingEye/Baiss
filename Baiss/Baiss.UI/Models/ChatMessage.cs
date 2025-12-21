@@ -20,6 +20,16 @@ namespace Baiss.UI.Models
             @"```python\s*(?<code>[\s\S]*?)```",
             RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+        // Regex to filter out <code_execution> and </code_execution> tags (and partial tags during streaming)
+        private static readonly Regex CodeExecutionTagRegex = new(
+            @"<\s*/?\s*code_execution\s*>",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+        // Regex to filter out [CODE_EXEC:status:error] markers
+        private static readonly Regex CodeExecMarkerRegex = new(
+            @"\[CODE_EXEC:[^\]]*\]",
+            RegexOptions.Compiled);
+
         private string _content = string.Empty;
         public required string Content
         {
@@ -208,6 +218,12 @@ namespace Baiss.UI.Models
                 return Array.Empty<MessageSegment>();
             }
 
+            // Remove <code_execution> and </code_execution> tags from the content
+            content = CodeExecutionTagRegex.Replace(content, string.Empty);
+
+            // Remove [CODE_EXEC:...] markers from the content
+            content = CodeExecMarkerRegex.Replace(content, string.Empty);
+
             // Combine all matches from both regexes with their types
             var allMatches = new List<(Match Match, string Type)>();
             
@@ -374,6 +390,11 @@ namespace Baiss.UI.Models
         public bool? IsSuccess => ExecutionResult?.IsSuccess;
 
         /// <summary>
+        /// Returns true if the parent message is still streaming.
+        /// </summary>
+        private bool IsParentStreaming => ParentMessage?.IsStreaming ?? false;
+
+        /// <summary>
         /// Output from the code execution (stdout or error message).
         /// </summary>
         public string? Output => ExecutionResult?.Error;
@@ -382,14 +403,14 @@ namespace Baiss.UI.Models
 
         public string StatusText => IsSuccess switch
         {
-            null => "Running...",
+            null => IsParentStreaming ? "Running..." : "Completed",
             true => "Success",
             false => "Error"
         };
 
         public string StatusColor => IsSuccess switch
         {
-            null => "#F59E0B", // amber/yellow for running
+            null => IsParentStreaming ? "#F59E0B" : "#10B981", // amber/yellow for running, green when completed
             true => "#10B981", // green for success
             false => "#EF4444"  // red for error
         };
