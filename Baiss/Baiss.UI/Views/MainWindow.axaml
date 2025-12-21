@@ -844,7 +844,7 @@
                                                                                         Text="{Binding Code}"
                                                                                         TextWrapping="Wrap"
                                                                                         FontFamily="Consolas, 'Cascadia Code', 'Courier New', monospace"
-                                                                                        FontSize="12"
+                                                                                        FontSize="16"
                                                                                         Foreground="#CBD5F5" />
                                                                                     
                                                                                     <!-- Output (if available) -->
@@ -865,7 +865,7 @@
                                                                                                 Text="{Binding Output}"
                                                                                                 TextWrapping="Wrap"
                                                                                                 FontFamily="Consolas, 'Cascadia Code', 'Courier New', monospace"
-                                                                                                FontSize="12"
+                                                                                                FontSize="16"
                                                                                                 Foreground="{Binding StatusColor}" />
                                                                                         </Border>
                                                                                     </StackPanel>
@@ -1022,7 +1022,7 @@
                                                     </StackPanel>
                                                 </Border>
                                                 
-                                                <!-- Copy Button (below message) -->
+                                                <!-- Copy Button (below message) - only visible when message is complete -->
                                                 <Button
                                                     Height="24"
                                                     Margin="20,0,10,0"
@@ -1032,6 +1032,7 @@
                                                     BorderThickness="0"
                                                     Opacity="0.4"
                                                     Cursor="Hand"
+                                                    IsVisible="{Binding IsComplete}"
                                                     Command="{Binding DataContext.CopyMessageCommand, ElementName=MainWin}"
                                                     CommandParameter="{Binding}"
                                                     ToolTip.Tip="Copy message">
