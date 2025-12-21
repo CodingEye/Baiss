@@ -146,6 +146,7 @@ namespace Baiss.UI.Views
                                 border-radius: 3px;
                                 color: #CE9178;
                                 font-family: Consolas, 'Courier New', monospace;
+                                font-size: 16px;
                             }}
                             pre {{ 
                                 background-color: #1E1E1E; 
@@ -159,6 +160,7 @@ namespace Baiss.UI.Views
                                 background-color: transparent; 
                                 padding: 0;
                                 color: #D4D4D4;
+                                font-size: 16px;
                             }}
                             a {{ 
                                 color: #4EC9B0;

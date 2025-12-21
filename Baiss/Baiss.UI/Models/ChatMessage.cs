@@ -64,9 +64,15 @@ namespace Baiss.UI.Models
                 {
                     _isStreaming = value;
                     OnPropertyChanged(nameof(IsStreaming));
+                    OnPropertyChanged(nameof(IsComplete));
                 }
             }
         }
+
+        /// <summary>
+        /// Returns true when the message is complete (not streaming) - used to show copy button
+        /// </summary>
+        public bool IsComplete => !IsStreaming && !IsMine;
 
         private List<SourceItem> _sources = new List<SourceItem>();
         public List<SourceItem> Sources
