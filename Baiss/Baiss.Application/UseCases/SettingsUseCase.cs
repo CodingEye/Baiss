@@ -323,4 +323,9 @@ public class SettingsUseCase
 		_settingsService.RefreshTreeStructure();
 	}
 
+    public Task<ModelDetailsResponseDto> SearchAndSaveExternalModelAsync(string modelId)
+    {
+        return _settingsService.SearchAndSaveExternalModelAsync(modelId);
+    }
+
 }

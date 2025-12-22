@@ -22,7 +22,7 @@ public class SettingsRepository : ISettingsRepository
         using var connection = _connectionFactory.CreateConnection();
 
         const string sql = @"
-            SELECT Performance, AllowedPaths, AllowedApplications, CreatedAt, UpdatedAt, AppVersion , EnableAutoUpdate, AllowFileReading, AllowUpdateCreatedFiles, AllowCreateNewFiles, NewFilesSavePath, AllowedFileExtensions, AIModelType, AIModelProviderScope, AIChatModelId, AIEmbeddingModelId, TreeStructureSchedule, TreeStructureScheduleEnabled
+            SELECT Performance, AllowedPaths, AllowedApplications, CreatedAt, UpdatedAt, AppVersion , EnableAutoUpdate, AllowFileReading, AllowUpdateCreatedFiles, AllowCreateNewFiles, NewFilesSavePath, AllowedFileExtensions, AIModelType, AIModelProviderScope, AIChatModelId, AIEmbeddingModelId, TreeStructureSchedule, TreeStructureScheduleEnabled, HaghinfacenApiKey
             FROM Settings";
         // WHERE Id = @Id";
 
@@ -48,6 +48,7 @@ public class SettingsRepository : ISettingsRepository
             AIEmbeddingModelId = result.AIEmbeddingModelId ?? string.Empty,
             TreeStructureSchedule = result.TreeStructureSchedule ?? "0 0 0 * * ?",
             TreeStructureScheduleEnabled = Convert.ToBoolean(result.TreeStructureScheduleEnabled),
+            HaghinfacenApiKey = result.HaghinfacenApiKey ?? string.Empty,
             CreatedAt = DateTime.Parse(result.CreatedAt),
             UpdatedAt = result.UpdatedAt != null ? DateTime.Parse(result.UpdatedAt) : null
         };
@@ -85,7 +86,8 @@ public class SettingsRepository : ISettingsRepository
                     AIChatModelId = @AIChatModelId,
                     AIEmbeddingModelId = @AIEmbeddingModelId,
                     TreeStructureSchedule = @TreeStructureSchedule,
-                    TreeStructureScheduleEnabled = @TreeStructureScheduleEnabled";
+                    TreeStructureScheduleEnabled = @TreeStructureScheduleEnabled,
+                    HaghinfacenApiKey = @HaghinfacenApiKey";
 
             await connection.ExecuteAsync(updateSql, new
             {
@@ -105,6 +107,7 @@ public class SettingsRepository : ISettingsRepository
                 AIEmbeddingModelId = settings.AIEmbeddingModelId,
                 TreeStructureSchedule = settings.TreeStructureSchedule,
                 TreeStructureScheduleEnabled = settings.TreeStructureScheduleEnabled,
+                HaghinfacenApiKey = settings.HaghinfacenApiKey,
                 UpdatedAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
             });
         }
@@ -112,8 +115,8 @@ public class SettingsRepository : ISettingsRepository
         {
             // Insert new settings
             const string insertSql = @"
-                INSERT INTO Settings (Performance, AllowedPaths, AllowedApplications, AppVersion, EnableAutoUpdate, AllowFileReading, AllowUpdateCreatedFiles, AllowCreateNewFiles, NewFilesSavePath, AllowedFileExtensions, AIModelType, AIModelProviderScope, AIChatModelId, AIEmbeddingModelId, TreeStructureSchedule, TreeStructureScheduleEnabled, CreatedAt, UpdatedAt)
-                VALUES (@Performance, @AllowedPaths, @AllowedApplications, @AppVersion, @EnableAutoUpdate, @AllowFileReading, @AllowUpdateCreatedFiles, @AllowCreateNewFiles, @NewFilesSavePath, @AllowedFileExtensions, @AIModelType, @AIModelProviderScope, @AIChatModelId, @AIEmbeddingModelId, @TreeStructureSchedule, @TreeStructureScheduleEnabled, @CreatedAt, @UpdatedAt)";
+                INSERT INTO Settings (Performance, AllowedPaths, AllowedApplications, AppVersion, EnableAutoUpdate, AllowFileReading, AllowUpdateCreatedFiles, AllowCreateNewFiles, NewFilesSavePath, AllowedFileExtensions, AIModelType, AIModelProviderScope, AIChatModelId, AIEmbeddingModelId, TreeStructureSchedule, TreeStructureScheduleEnabled, HaghinfacenApiKey, CreatedAt, UpdatedAt)
+                VALUES (@Performance, @AllowedPaths, @AllowedApplications, @AppVersion, @EnableAutoUpdate, @AllowFileReading, @AllowUpdateCreatedFiles, @AllowCreateNewFiles, @NewFilesSavePath, @AllowedFileExtensions, @AIModelType, @AIModelProviderScope, @AIChatModelId, @AIEmbeddingModelId, @TreeStructureSchedule, @TreeStructureScheduleEnabled, @HaghinfacenApiKey, @CreatedAt, @UpdatedAt)";
 
             await connection.ExecuteAsync(insertSql, new
             {
@@ -133,6 +136,7 @@ public class SettingsRepository : ISettingsRepository
                 AIEmbeddingModelId = settings.AIEmbeddingModelId,
                 TreeStructureSchedule = settings.TreeStructureSchedule,
                 TreeStructureScheduleEnabled = settings.TreeStructureScheduleEnabled,
+                HaghinfacenApiKey = settings.HaghinfacenApiKey,
                 CreatedAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
                 UpdatedAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
             });

@@ -1,0 +1,1 @@
+ALTER TABLE Settings ADD COLUMN HaghinfacenApiKey TEXT NOT NULL DEFAULT '';

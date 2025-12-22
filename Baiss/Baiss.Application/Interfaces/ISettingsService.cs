@@ -50,6 +50,14 @@ public interface ISettingsService
     void StopBackgroundOperations();
 
     /// <summary>
+    /// Searches for an external model and saves it to available models if found
+    /// </summary>
+    /// <param name="modelId">The model ID to search for</param>
+    /// <param name="token">Optional API token</param>
+    /// <returns>The result of the operation</returns>
+    Task<ModelDetailsResponseDto> SearchAndSaveExternalModelAsync(string modelId);
+
+    /// <summary>
     /// Allows paused background operations to run again.
     /// </summary>
     void ResumeBackgroundOperations();

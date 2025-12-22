@@ -65,6 +65,18 @@ public class AIModel : ViewModelBase
     public int Likes { get; set; }
     public string DownloadsFormatted => Downloads > 0 ? Downloads.ToString("N0", CultureInfo.InvariantCulture) : "0";
 
+    private bool _isDescriptionExpanded;
+    public bool IsDescriptionExpanded
+    {
+        get => _isDescriptionExpanded;
+        set => SetProperty(ref _isDescriptionExpanded, value);
+    }
+
+    public bool IsDescriptionLong => !string.IsNullOrEmpty(Description) && (Description.Length > 150 || Description.Count(c => c == '\n') > 1);
+
+    private ICommand? _toggleDescriptionExpandedCommand;
+    public ICommand ToggleDescriptionExpandedCommand => _toggleDescriptionExpandedCommand ??= new RelayCommand(() => IsDescriptionExpanded = !IsDescriptionExpanded);
+
     private bool _isDownloading = false;
     private bool _isDownloaded = false;
     private double _downloadProgress = 0.0;
@@ -414,6 +426,39 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     private int _selectedModelIndex = -1;
 
     public ObservableCollection<AIModel> AvailableModels { get; } = new ObservableCollection<AIModel>();
+
+    public ICommand SearchExternalModelCommand { get; }
+
+    private async Task SearchExternalModelAsync(object? parameter)
+    {
+        if (string.IsNullOrWhiteSpace(ExternalModelSearchText)) return;
+
+        try
+        {
+            IsLoadingModels = true;
+            var result = await _settingsUseCase.SearchAndSaveExternalModelAsync(ExternalModelSearchText);
+            if (result.Success)
+            {
+                Views.MainWindow.ToastServiceInstance.ShowSuccess(result.Message ?? "Model saved successfully", 5000);
+                // Refresh available models
+                await LoadLocalModelsAsync();
+                ExternalModelSearchText = string.Empty; // Clear search
+            }
+            else
+            {
+                Views.MainWindow.ToastServiceInstance.ShowError(result.Error ?? "Failed to save model", 5000);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error searching external model");
+            Views.MainWindow.ToastServiceInstance.ShowError("An unexpected error occurred", 5000);
+        }
+        finally
+        {
+            IsLoadingModels = false;
+        }
+    }
 
     public AIModel? SelectedAIModel
     {
@@ -1284,6 +1329,58 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
     public bool HasDownloadedLocalEmbeddingModels => DownloadedLocalEmbeddingModels.Count > 0;
 
     // Model search functionality
+    private string _externalModelSearchText = string.Empty;
+    public string ExternalModelSearchText
+    {
+        get => _externalModelSearchText;
+        set => SetProperty(ref _externalModelSearchText, value);
+    }
+
+    private string _huggingFaceApiKey = string.Empty;
+    private string _originalHuggingFaceApiKey = string.Empty;
+
+    public string HuggingFaceApiKey
+    {
+        get => _huggingFaceApiKey;
+        set
+        {
+            if (SetProperty(ref _huggingFaceApiKey, value))
+            {
+                OnPropertyChanged(nameof(IsHuggingFaceTokenSaved));
+                (SaveHuggingFaceTokenCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+            }
+        }
+    }
+
+    public bool IsHuggingFaceTokenSaved => !string.IsNullOrWhiteSpace(_originalHuggingFaceApiKey);
+
+    public ICommand SaveHuggingFaceTokenCommand { get; }
+    public ICommand DeleteHuggingFaceTokenCommand { get; }
+
+    private bool CanSaveHuggingFaceToken(object? parameter)
+    {
+        return !string.IsNullOrWhiteSpace(HuggingFaceApiKey) && HuggingFaceApiKey != _originalHuggingFaceApiKey;
+    }
+
+    private async Task SaveHuggingFaceTokenAsync()
+    {
+        await SaveAIModelSettingsAsync(showSuccessToast: false);
+        _originalHuggingFaceApiKey = HuggingFaceApiKey;
+        OnPropertyChanged(nameof(IsHuggingFaceTokenSaved));
+        (SaveHuggingFaceTokenCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        try { Views.MainWindow.ToastServiceInstance.ShowSuccess("Hugging Face API Key saved successfully", 3000); } catch { }
+    }
+
+    private async Task DeleteHuggingFaceTokenAsync()
+    {
+        HuggingFaceApiKey = string.Empty;
+        await SaveAIModelSettingsAsync(showSuccessToast: false);
+        _originalHuggingFaceApiKey = string.Empty;
+        OnPropertyChanged(nameof(IsHuggingFaceTokenSaved));
+        (SaveHuggingFaceTokenCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        try { Views.MainWindow.ToastServiceInstance.ShowSuccess("Hugging Face API Key deleted successfully", 3000); } catch { }
+    }
+
     private string _modelSearchText = string.Empty;
     public string ModelSearchText
     {
@@ -1973,6 +2070,10 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
 
         InitializeSettingsNavigationItems();
         InitializeAIModels();
+
+        SearchExternalModelCommand = new AsyncRelayCommand(SearchExternalModelAsync);
+        SaveHuggingFaceTokenCommand = new AsyncRelayCommand(async _ => await SaveHuggingFaceTokenAsync(), CanSaveHuggingFaceToken);
+        DeleteHuggingFaceTokenCommand = new AsyncRelayCommand(async _ => await DeleteHuggingFaceTokenAsync());
 
         SelectSettingsItemCommand = new RelayCommand<SettingsNavigationItem>(item =>
         {
@@ -2801,6 +2902,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
 
         // Update downloaded models by purpose collections
         UpdateDownloadedModelsByPurpose();
+
+        OnPropertyChanged(nameof(FilteredDownloadedLocalModels));
     }
 
     /// <summary>
@@ -3979,6 +4082,12 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
             // Initialize provider scope and corresponding radio button booleans from persisted value
             _aiModelProviderScope = savedScope; // set backing field directly to avoid triggering persistence
             OnPropertyChanged(nameof(AIModelProviderScope));
+
+            _huggingFaceApiKey = settings.HuggingFaceApiKey ?? string.Empty;
+            _originalHuggingFaceApiKey = _huggingFaceApiKey;
+            OnPropertyChanged(nameof(HuggingFaceApiKey));
+            OnPropertyChanged(nameof(IsHuggingFaceTokenSaved));
+            (SaveHuggingFaceTokenCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
 
             // Reset all selection flags then set the one matching scope (avoid recursive setter logic during init)
             _isLocalModelsSelected = false;
@@ -5826,7 +5935,8 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
                 AIModelType = AIModelType,
                 AIChatModelId = chatModelId,
                 AIEmbeddingModelId = embeddingModelId,
-                AIModelProviderScope = AIModelProviderScope
+                AIModelProviderScope = AIModelProviderScope,
+                HuggingFaceApiKey = HuggingFaceApiKey
             };
 
             var result = await _settingsUseCase.UpdateAIModelSettingsAsync(updateDto);
@@ -6312,6 +6422,3 @@ public partial class SettingsViewModel : ViewModelBase, IDisposable
 
     #endregion
 }
-
-
-

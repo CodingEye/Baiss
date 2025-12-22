@@ -20,6 +20,7 @@
         <conv:EqualityMultiValueConverter x:Key="EqualityMultiValueConverter" />
         <conv:ScopeEqualsConverter x:Key="ScopeEqualsConverter" />
         <conv:PercentageToOffsetConverter x:Key="PercentageToOffsetConverter" />
+        <conv:BoolToMaxLinesConverter x:Key="BoolToMaxLinesConverter" />
     </UserControl.Resources>
 
     <Grid ColumnDefinitions="200,*">
@@ -168,13 +169,74 @@
                                             </Grid>
                                         </Border>
                                         </StackPanel>
+
                                         <StackPanel Spacing="8">
-                                            <TextBlock Text="Available Models"
+                                            <TextBlock Text="Hugging Face API Key"
+                                                       FontSize="13.4"
+                                                       FontWeight="Medium" />
+                                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                                <TextBox Grid.Column="0"
+                                                         Watermark="Enter your Hugging Face API Key"
+                                                         Text="{Binding HuggingFaceApiKey}"
+                                                         PasswordChar="*"
+                                                         MinHeight="38"
+                                                         Height="38"
+                                                         VerticalContentAlignment="Center"
+                                                         HorizontalAlignment="Stretch"
+                                                         Background="{StaticResource ModelCardBackgroundBrush}"
+                                                         BorderBrush="rgba(255,255,255,0.1)"
+                                                         BorderThickness="1"
+                                                         CornerRadius="4"
+                                                         Padding="10,8" />
+                                                <Button Grid.Column="1"
+                                                        Content="Save"
+                                                        Command="{Binding SaveHuggingFaceTokenCommand}"
+                                                        Margin="8,0,0,0"
+                                                        Padding="12,8"
+                                                        Background="#3B82F6"
+                                                        Foreground="White"
+                                                        BorderThickness="0"
+                                                        CornerRadius="4" />
+                                                <Button Grid.Column="2"
+                                                        Content="Delete"
+                                                        Command="{Binding DeleteHuggingFaceTokenCommand}"
+                                                        IsVisible="{Binding IsHuggingFaceTokenSaved}"
+                                                        Margin="8,0,0,0"
+                                                        Padding="12,8"
+                                                        Background="#EF4444"
+                                                        Foreground="White"
+                                                        BorderThickness="0"
+                                                        CornerRadius="4" />
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="Get other Models from Haghinfacen"
                                                        FontSize="13.4"
                                                        FontWeight="Medium" />
 
-                                            <!-- Search Bar -->
-                                            <TextBox Watermark="Search models..."
+                                            <!-- External Search Bar -->
+                                            <TextBox Watermark="Search other models..."
+                                                     Text="{Binding ExternalModelSearchText}"
+                                                     MinHeight="38"
+                                                     Height="38"
+                                                     VerticalContentAlignment="Center"
+                                                     HorizontalAlignment="Stretch"
+                                                     Background="{StaticResource ModelCardBackgroundBrush}"
+                                                     BorderBrush="rgba(255,255,255,0.1)"
+                                                     BorderThickness="1"
+                                                     CornerRadius="4"
+                                                     Padding="10,8">
+                                                <TextBox.KeyBindings>
+                                                    <KeyBinding Gesture="Enter" Command="{Binding SearchExternalModelCommand}" />
+                                                </TextBox.KeyBindings>
+                                            </TextBox>
+
+                                            <TextBlock Text="Available Models"
+                                                       FontSize="13.4"
+                                                       FontWeight="Medium" />
+                                            <!-- Filter Bar -->
+                                            <TextBox Watermark="Filter available models..."
                                                      Text="{Binding ModelSearchText}"
                                                      MinHeight="38"
                                                      Height="38"
@@ -184,7 +246,8 @@
                                                      BorderBrush="rgba(255,255,255,0.1)"
                                                      BorderThickness="1"
                                                      CornerRadius="4"
-                                                     Padding="10,8" />
+                                                     Padding="10,8">
+                                            </TextBox>
 
                                                                                                                 <!-- Models list as individual cards (bound) -->
                                                         <ItemsControl ItemsSource="{Binding FilteredDownloadedLocalModels}"
@@ -212,7 +275,30 @@
                                                                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding DisplayText}" FontSize="15.2" FontWeight="SemiBold" Foreground="White" />
 
                                                                                 <!-- Description -->
-                                                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="{Binding Description}" FontSize="12" Foreground="#9CA3AF" TextWrapping="Wrap" Margin="0,6,0,0" />
+                                                                                <Grid Grid.Row="1" Grid.Column="0" Margin="0,6,0,0">
+                                                                                    <TextBlock Text="{Binding Description}"
+                                                                                               FontSize="12"
+                                                                                               Foreground="#9CA3AF"
+                                                                                               TextWrapping="Wrap"
+                                                                                               MaxLines="{Binding IsDescriptionExpanded, Converter={StaticResource BoolToMaxLinesConverter}}"
+                                                                                               TextTrimming="CharacterEllipsis" />
+                                                                                    <Button Command="{Binding ToggleDescriptionExpandedCommand}"
+                                                                                            IsVisible="{Binding IsDescriptionLong}"
+                                                                                            HorizontalAlignment="Right"
+                                                                                            VerticalAlignment="Bottom"
+                                                                                            Background="Transparent"
+                                                                                            BorderThickness="0"
+                                                                                            Padding="4,0"
+                                                                                            Foreground="#3B82F6"
+                                                                                            FontSize="16"
+                                                                                            FontWeight="Bold"
+                                                                                            Margin="0,0,0,-4">
+                                                                                        <Panel>
+                                                                                            <TextBlock Text="+" IsVisible="{Binding !IsDescriptionExpanded}"/>
+                                                                                            <TextBlock Text="-" IsVisible="{Binding IsDescriptionExpanded}"/>
+                                                                                        </Panel>
+                                                                                    </Button>
+                                                                                </Grid>
 
                                                                                 <!-- By Author Downloads on left -->
                                                                                 <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="0,6,0,0">
