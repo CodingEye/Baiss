@@ -78,7 +78,7 @@ public class SettingsService : ISettingsService
                 AIModelProviderScope = settings.AIModelProviderScope,
                 AIChatModelId = settings.AIChatModelId,
                 AIEmbeddingModelId = settings.AIEmbeddingModelId,
-                HuggingFaceApiKey = settings.HaghinfacenApiKey,
+                HuggingFaceApiKey = settings.HuggingfaceApiKey,
                 TreeStructureSchedule = settings.TreeStructureSchedule,
                 TreeStructureScheduleEnabled = settings.TreeStructureScheduleEnabled,
                 CreatedAt = settings.CreatedAt,
@@ -590,7 +590,7 @@ public class SettingsService : ISettingsService
 
             if (aiModelDto.HuggingFaceApiKey != null)
             {
-                settings.HaghinfacenApiKey = aiModelDto.HuggingFaceApiKey;
+                settings.HuggingfaceApiKey = aiModelDto.HuggingFaceApiKey;
             }
 
 
@@ -1398,7 +1398,7 @@ public class SettingsService : ISettingsService
     private async Task<string?> GetHuggingFaceApiKeyAsync()
     {
         var settings = await _settingsRepository.GetAsync();
-        return settings?.HaghinfacenApiKey ?? null;
+        return settings?.HuggingfaceApiKey ?? null;
     }
 
     public async Task<ModelDetailsResponseDto> SearchAndSaveExternalModelAsync(string modelId)

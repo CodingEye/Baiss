@@ -48,7 +48,7 @@ public class Settings
     /// </summary>
     public string AIModelProviderScope { get; set; } = "local"; // local | hosted | databricks
 
-    public string HaghinfacenApiKey { get; set; } = string.Empty;
+    public string HuggingfaceApiKey { get; set; } = string.Empty;
 
     public string TreeStructureSchedule { get; set; } = "0 0 0 * * ?";
     public bool TreeStructureScheduleEnabled { get; set; } = false;

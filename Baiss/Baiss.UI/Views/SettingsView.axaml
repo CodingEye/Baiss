@@ -226,7 +226,7 @@
                                         </StackPanel>
 
                                         <StackPanel Spacing="8">
-                                            <TextBlock Text="Get other Models from Haghinfacen"
+                                            <TextBlock Text="Get other Models from Huggingface"
                                                        FontSize="13.4"
                                                        FontWeight="Medium" />
                                             <!-- External Search Bar -->
