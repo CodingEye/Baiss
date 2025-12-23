@@ -131,64 +131,32 @@
                                                 <Run Text=" *"
                                                      Foreground="#EF4444" />
                                             </TextBlock>
-                                            <Border Background="{StaticResource ModelCardBackgroundBrush}"
-                                                    BorderBrush="rgba(255,255,255,0.1)"
-                                                    BorderThickness="1"
-                                                    CornerRadius="6"
-                                                    Padding="14,10">
-                                                <Grid ColumnDefinitions="*,Auto">
-                                                    <StackPanel Spacing="2">
-                                                        <TextBlock Text="{Binding SelectedLocalEmbeddingModel.DisplayText, TargetNullValue='No embedding attached'}"
-                                                                   FontSize="13"
-                                                                   Foreground="White"
-                                                                   TextWrapping="Wrap" />
-                                                        <TextBlock Text="{Binding SelectedLocalEmbeddingModel.Id, TargetNullValue='Choose an embedding to attach'}"
-                                                                   FontSize="11"
-                                                                   Foreground="#9CA3AF"
-                                                                   TextWrapping="Wrap" />
-                                                    </StackPanel>
-                                                    <Grid Grid.Column="1"
-                                                          VerticalAlignment="Center"
-                                                          HorizontalAlignment="Right">
-                                                        <Button Content="Download"
-                                                                Command="{Binding DownloadModelCommand}"
-                                                                CommandParameter="{Binding SelectedLocalEmbeddingModel}"
-                                                                FontSize="12"
-                                                                Padding="12,6"
-                                                                Background="#3B82F6"
-                                                                Foreground="White"
-                                                                BorderBrush="#3B82F6"
-                                                                BorderThickness="1"
-                                                                CornerRadius="6"
-                                                                IsVisible="{Binding SelectedLocalEmbeddingModel.ShowDownloadButton}" />
-                                                        <Button Content="Remove"
-                                                                Command="{Binding RemoveModelCommand}"
-                                                                CommandParameter="{Binding SelectedLocalEmbeddingModel}"
-                                                                FontSize="12"
-                                                                Padding="12,6"
-                                                                Background="#DC2626"
-                                                                Foreground="White"
-                                                                BorderBrush="#DC2626"
-                                                                BorderThickness="1"
-                                                                CornerRadius="6"
-                                                                IsVisible="{Binding SelectedLocalEmbeddingModel.ShowDeleteButton}" />
-                                                        <ProgressBar Width="48"
-                                                                     Height="3"
-                                                                     Minimum="0"
-                                                                     Maximum="100"
-                                                                     Value="{Binding SelectedLocalEmbeddingModel.DownloadProgress}"
-                                                                     VerticalAlignment="Center"
-                                                                     HorizontalAlignment="Left"
-                                                                     IsVisible="{Binding SelectedLocalEmbeddingModel.ShowDownloadSpinner}" />
-                                                    </Grid>
-                                                </Grid>
-                                            </Border>
+                                            <ComboBox ItemsSource="{Binding DownloadedLocalEmbeddingModels}"
+                                                      SelectedItem="{Binding SelectedLocalEmbeddingModel}"
+                                                      FontSize="13"
+                                                      MinHeight="38"
+                                                      Height="38"
+                                                      VerticalContentAlignment="Center"
+                                                      PlaceholderText="No downloaded embedding models available"
+                                                      HorizontalAlignment="Stretch">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding DisplayText}"
+                                                                   VerticalAlignment="Center"
+                                                                   FontSize="13" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
                                         </StackPanel>
 
                                         <StackPanel Spacing="8">
                                             <TextBlock Text="Hugging Face API Key"
                                                        FontSize="13.4"
                                                        FontWeight="Medium" />
+                                            <TextBlock Text="Token is required only when you need to accept a license agreement to download the models."
+                                                       FontSize="12"
+                                                       FontWeight="Medium"
+                                                       Foreground="Gray" />
                                             <Grid ColumnDefinitions="*,Auto,Auto">
                                                 <TextBox Grid.Column="0"
                                                          Watermark="Enter your Hugging Face API Key"
@@ -229,6 +197,10 @@
                                             <TextBlock Text="Get other Models from Huggingface"
                                                        FontSize="13.4"
                                                        FontWeight="Medium" />
+                                            <TextBlock Text="We only accept GGUF models, paste model id below in the format name/model_id, example: unsloth/gemma-3-4b-it-GGUF."
+                                                       FontSize="12"
+                                                       FontWeight="Medium"
+                                                       Foreground="Gray" />
                                             <!-- External Search Bar -->
                                             <TextBox Watermark="Search other models..."
                                                      Text="{Binding ExternalModelSearchText}"
