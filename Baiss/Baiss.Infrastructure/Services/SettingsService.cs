@@ -78,6 +78,7 @@ public class SettingsService : ISettingsService
                 AIModelProviderScope = settings.AIModelProviderScope,
                 AIChatModelId = settings.AIChatModelId,
                 AIEmbeddingModelId = settings.AIEmbeddingModelId,
+                HuggingFaceApiKey = settings.HuggingfaceApiKey,
                 TreeStructureSchedule = settings.TreeStructureSchedule,
                 TreeStructureScheduleEnabled = settings.TreeStructureScheduleEnabled,
                 CreatedAt = settings.CreatedAt,
@@ -587,6 +588,11 @@ public class SettingsService : ISettingsService
                 _logger.LogInformation("Embedding model ID {Action}: {Value}", string.IsNullOrEmpty(settings.AIEmbeddingModelId) ? "cleared" : (oldEmb == settings.AIEmbeddingModelId ? "unchanged" : "updated"), settings.AIEmbeddingModelId);
             }
 
+            if (aiModelDto.HuggingFaceApiKey != null)
+            {
+                settings.HuggingfaceApiKey = aiModelDto.HuggingFaceApiKey;
+            }
+
 
             settings.UpdatedAt = DateTime.UtcNow;
 
@@ -641,7 +647,7 @@ public class SettingsService : ISettingsService
                 {
                     try
                     {
-                        _logger.LogInformation("Restarting llama-cpp server with new chat model: {ModelId}", settings.AIEmbeddingModelId);
+                        _logger.LogInformation("Restarting llama-cpp server with new embedding model: {ModelId}", settings.AIEmbeddingModelId);
 
                         // Stop existing server if running using the centralized method
                         _logger.LogInformation("Stopping existing llama-cpp server process");
@@ -654,7 +660,7 @@ public class SettingsService : ISettingsService
                             _logger.LogInformation("Launching llama-cpp server with model path: {ModelPath}", modelPath);
 
                             // Launch new server with the updated model
-                            var newProcess = await _launchServerService.LaunchLlamaCppServerAsync("embedding", modelPath);
+                            var newProcess = await _launchServerService.LaunchLlamaCppServerAsync("embedding", modelPath, "--embeddings");
                             if (newProcess != null)
                             {
                                 _logger.LogInformation("llama-cpp server restarted successfully with new model");
@@ -937,6 +943,7 @@ public class SettingsService : ISettingsService
                 {
                     Id = m.ModelId,
                     IsDownloaded = isDownloaded,
+                    IsValid = true,
                     Metadata = JsonDocument.Parse(jsonString), // Store as JsonDocument
                     UpdatedAt = DateTime.UtcNow,
                     CreatedAt = DateTime.UtcNow
@@ -955,7 +962,7 @@ public class SettingsService : ISettingsService
                 var apiModelIds = models.Select(m => m.ModelId).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
                 var modelsToDelete = savedModels
-                    .Where(dbModel => !apiModelIds.Contains(dbModel.Id) && !dbModel.IsDownloaded)
+                    .Where(dbModel => !apiModelIds.Contains(dbModel.Id) && !dbModel.IsDownloaded && dbModel.IsValid)
                     .ToList();
 
                 if (modelsToDelete.Any())
@@ -1007,8 +1014,9 @@ public class SettingsService : ISettingsService
                     }
 
                     // Add downloaded models that are not in API response at the top
+                    // Also include manually added models (IsValid = false) that are not in the API response
                     var modelsNotInApi = savedModels
-                        .Where(m => !apiModelIds.Contains(m.Id) && m.IsDownloaded)
+                        .Where(m => !apiModelIds.Contains(m.Id) && (m.IsDownloaded || !m.IsValid))
                         .OrderBy(m => m.CreatedAt)
                         .Select(m =>
                         {
@@ -1024,6 +1032,7 @@ public class SettingsService : ISettingsService
                             }
                         })
                         .Where(m => m != null)
+                        .Select(m => m!)
                         .ToList();
 
                     // Combine: downloaded models not in API first, then models from API (in API order)
@@ -1068,6 +1077,7 @@ public class SettingsService : ISettingsService
                             }
                         })
                         .Where(m => m != null)
+                        .Select(m => m!)
                         .ToList();
 
                     return modelInfoList;
@@ -1418,4 +1428,112 @@ public class SettingsService : ISettingsService
         });
     }
 
+    private async Task<string?> GetHuggingFaceApiKeyAsync()
+    {
+        var settings = await _settingsRepository.GetAsync();
+        return settings?.HuggingfaceApiKey ?? null;
+    }
+
+    public async Task<ModelDetailsResponseDto> SearchAndSaveExternalModelAsync(string modelId)
+    {
+        try
+        {
+            var token = await GetHuggingFaceApiKeyAsync();
+
+            var response = await _externalApiService.GetExternalModelDetailsAsync(modelId, token);
+            if (!response.Success || response.Data == null) return response;
+
+            JsonElement rootElement;
+            if (response.Data is JsonElement element)
+            {
+                rootElement = element;
+            }
+            else
+            {
+                try
+                {
+                    var json = JsonSerializer.Serialize(response.Data);
+                    using var doc = JsonDocument.Parse(json);
+                    rootElement = doc.RootElement.Clone();
+                }
+                catch
+                {
+                    return new ModelDetailsResponseDto { Success = false, Error = "Failed to parse model data" };
+                }
+            }
+
+            bool savedAny = false;
+
+            // Handle Array of models
+            if (rootElement.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var item in rootElement.EnumerateArray())
+                {
+                    if (await SaveModelFromElement(item))
+                    {
+                        savedAny = true;
+                    }
+                }
+            }
+            // Handle Single Object
+            else if (rootElement.ValueKind == JsonValueKind.Object)
+            {
+                if (await SaveModelFromElement(rootElement))
+                {
+                    savedAny = true;
+                }
+            }
+
+            if (savedAny)
+            {
+                return new ModelDetailsResponseDto { Success = true, Message = "Model saved successfully" };
+            }
+            else
+            {
+                return new ModelDetailsResponseDto { Success = false, Error = "Model found but failed to save (might already exist)" };
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error searching and saving external model {ModelId}", modelId);
+            return new ModelDetailsResponseDto { Success = false, Error = ex.Message };
+        }
+    }
+
+    private async Task<bool> SaveModelFromElement(JsonElement element)
+    {
+        try
+        {
+            if (!element.TryGetProperty("model_id", out var idProp)) return false;
+            var id = idProp.GetString();
+            if (string.IsNullOrEmpty(id)) return false;
+
+            var existingModel = await _availableModelRepository.GetByIdAsync(id);
+
+            var availableModel = new AvailableModel
+            {
+                Id = id,
+                IsDownloaded = existingModel?.IsDownloaded ?? false,
+                IsValid = existingModel?.IsValid ?? false,
+                Metadata = JsonDocument.Parse(element.GetRawText()),
+                UpdatedAt = DateTime.UtcNow,
+                CreatedAt = existingModel?.CreatedAt ?? DateTime.UtcNow
+            };
+
+            if (existingModel != null)
+            {
+                await _availableModelRepository.UpdateAsync(availableModel);
+            }
+            else
+            {
+                await _availableModelRepository.AddAsync(availableModel);
+            }
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error saving model element");
+            return false;
+        }
+    }
 }

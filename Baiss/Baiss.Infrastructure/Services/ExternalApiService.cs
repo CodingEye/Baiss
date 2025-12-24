@@ -1211,5 +1211,45 @@ public class ExternalApiService : IExternalApiService, IDisposable
 		}
 	}
 
+	public async Task<ModelDetailsResponseDto> GetExternalModelDetailsAsync(string modelId, string? token = null)
+	{
+		try
+		{
+			var endpoint = _baseUrl + "models/model_details";
+			var requestDto = new ModelDetailsRequestDto
+			{
+				ModelId = modelId,
+				Token = token
+			};
 
+			var response = await _httpClient.PostAsJsonAsync(endpoint, requestDto);
+			var responseContent = await response.Content.ReadAsStringAsync();
+
+			if (!response.IsSuccessStatusCode)
+			{
+				_logger.LogError("Failed to get external model details. Status Code: {StatusCode}, Response: {Response}", response.StatusCode, responseContent);
+				try
+				{
+					var errorResponse = JsonSerializer.Deserialize<ModelDetailsResponseDto>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+					if (errorResponse != null) return errorResponse;
+				}
+				catch { }
+
+				return new ModelDetailsResponseDto
+				{
+					Success = false,
+					Status = (int)response.StatusCode,
+					Error = $"HTTP Error {response.StatusCode}: {responseContent}"
+				};
+			}
+
+			var result = JsonSerializer.Deserialize<ModelDetailsResponseDto>(responseContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+			return result ?? new ModelDetailsResponseDto { Success = false, Error = "Failed to deserialize response" };
+		}
+		catch (Exception ex)
+		{
+			_logger.LogError(ex, "Error getting external model details for {ModelId}", modelId);
+			return new ModelDetailsResponseDto { Success = false, Error = ex.Message };
+		}
+	}
 }

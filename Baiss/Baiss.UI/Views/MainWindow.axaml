@@ -173,9 +173,148 @@
             <Setter Property="BorderThickness"
                     Value="0" />
         </Style>
+        <Style Selector="StackPanel.chat-buttons">
+            <Setter Property="Margin" Value="0,0,0,0" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <ThicknessTransition Property="Margin" Duration="0:0:0.1" Easing="LinearEasing" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="StackPanel.chat-buttons.sidebarOpen">
+            <Setter Property="Margin" Value="280,0,0,0" />
+        </Style>
     </Window.Styles>
-    <Border PointerPressed="OnRootPointerPressed">
+    <Border PointerPressed="OnContentAreaPointerPressed">
         <Grid>
+            <!-- Window Chrome / Title Bar -->
+            <Grid Height="40" 
+                  VerticalAlignment="Top" 
+                  ZIndex="2000"
+                  IsVisible="{Binding !IsCollapsed}">
+                <!-- Drag Area -->
+                <Border Background="Transparent" 
+                        PointerPressed="OnRootPointerPressed" />
+
+                <!-- Left Controls (Settings Back Button) -->
+                <!-- Left Controls Container -->
+                <StackPanel HorizontalAlignment="Left" 
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal"
+                            Margin="15,0,0,0">
+                    
+                    <!-- Settings Back Button (Visible ONLY in Settings) -->
+                    <StackPanel Orientation="Horizontal" 
+                                Spacing="5" 
+                                IsVisible="{Binding IsSettingsView}"
+                                PointerPressed="OnTitleBarButtonPointerPressed"
+                                Background="Transparent">
+                        <Button Background="rgba(19, 19, 19, 0.4)"
+                                BorderBrush="rgba(255,255,255,0.05)"
+                                BorderThickness="1"
+                                Classes="icon-btn"
+                                Command="{Binding NavigateBackCommand}"
+                                CornerRadius="25">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="4"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center">
+                                <Image Width="16"
+                                       Height="16"
+                                       VerticalAlignment="Center"
+                                       Source="{SvgImage /Assets/chevron-left-white.svg}" />
+                                <TextBlock VerticalAlignment="Center"
+                                           FontSize="15.2"
+                                           Text="Back" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+
+                    <!-- Chat View Controls (Visible ONLY in Chat) -->
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="2"
+                                IsVisible="{Binding !IsSettingsView}"
+                                PointerPressed="OnTitleBarButtonPointerPressed"
+                                Background="Transparent"
+                                Classes="chat-buttons"
+                                Classes.sidebarOpen="{Binding IsSidebarOpen}">
+                        <Button Width="40"
+                                Height="40"
+                                Background="rgba(19, 19, 19, 0.4)"
+                                Classes="icon-btn"
+                                Command="{Binding ToggleSidebarCommand}"
+                                CornerRadius="100">
+                            <Image Width="20"
+                                   Height="20"
+                                   Source="{SvgImage /Assets/history.svg}" />
+                        </Button>
+                        <Button Width="40"
+                                Height="40"
+                                Background="rgba(19, 19, 19, 0.4)"
+                                Classes="icon-btn"
+                                Command="{Binding NavigateToSettingsCommand}"
+                                CornerRadius="100">
+                            <Image Width="20"
+                                   Height="20"
+                                   Source="{SvgImage /Assets/settings.svg}" />
+                        </Button>
+                        <Button Width="40"
+                                Height="40"
+                                Background="rgba(19, 19, 19, 0.4)"
+                                Classes="icon-btn"
+                                Command="{Binding CreateNewChatCommand}"
+                                CornerRadius="100">
+                            <Image Width="20"
+                                   Height="20"
+                                   Source="{SvgImage /Assets/add.svg}" />
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Right Controls (Server Status & Window Buttons) -->
+                <StackPanel HorizontalAlignment="Right" 
+                            VerticalAlignment="Center"
+                            Orientation="Horizontal" 
+                            Spacing="8" 
+                            Margin="0,0,15,0"
+                            PointerPressed="OnTitleBarButtonPointerPressed"
+                            Background="Transparent">
+                    <!-- Server Status Indicator -->
+                    <Border Background="rgba(19, 19, 19, 0.6)"
+                            CornerRadius="20"
+                            Padding="10,8"
+                            VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Border Width="10"
+                                    Height="10"
+                                    CornerRadius="5"
+                                    Background="{Binding ServerStatusColor}"
+                                    VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding IsServerOnline, Converter={x:Static conv:ServerStatusTextConverter.Instance}}"
+                                       FontSize="14"
+                                       FontWeight="Medium"
+                                       Foreground="White"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Minimize -->
+                    <Button Background="Transparent"
+                            Classes="icon-btn"
+                            Click="MinimizeButton_Click"
+                            CornerRadius="100">
+                        <TextBlock FontSize="15.2" Text="-" />
+                    </Button>
+                    
+                    <!-- Close -->
+                    <Button Background="Transparent"
+                            Classes="icon-btn"
+                            Click="CloseButton_Click"
+                            CornerRadius="100">
+                        <TextBlock FontSize="15.2" Text="x" />
+                    </Button>
+                </StackPanel>
+            </Grid>
             <!-- Toast Overlay Layer -->
             <Grid x:Name="ToastLayer"
                   ZIndex="1000"
@@ -577,81 +716,8 @@
                                                VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
-                            <StackPanel Margin="20,5,5,5"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Top"
-                                        Orientation="Horizontal"
-                                        Spacing="2">
-                                <Button Width="40"
-                                        Height="40"
-                                        Background="rgba(19, 19, 19, 0.4)"
-                                        Classes="icon-btn"
-                                        Command="{Binding ToggleSidebarCommand}"
-                                        CornerRadius="100">
-                                    <Image Width="20"
-                                           Height="20"
-                                           Source="{SvgImage /Assets/history.svg}" />
-                                </Button>
-                                <Button Width="40"
-                                        Height="40"
-                                        Background="rgba(19, 19, 19, 0.4)"
-                                        Classes="icon-btn"
-                                        Command="{Binding NavigateToSettingsCommand}"
-                                        CornerRadius="100">
-                                    <Image Width="20"
-                                           Height="20"
-                                           Source="{SvgImage /Assets/settings.svg}" />
-                                </Button>
-                                <Button Width="40"
-                                        Height="40"
-                                        Background="rgba(19, 19, 19, 0.4)"
-                                        Classes="icon-btn"
-                                        Command="{Binding CreateNewChatCommand}"
-                                        CornerRadius="100">
-                                    <Image Width="20"
-                                           Height="20"
-                                           Source="{SvgImage /Assets/add.svg}" />
-                                </Button>
-                            </StackPanel>
-                            <StackPanel Margin="5,5,20,5"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Top"
-                                        Orientation="Horizontal"
-                                        Spacing="8">
-                                <!-- Server Status Indicator with Text -->
-                                <Border Background="rgba(19, 19, 19, 0.6)"
-                                        CornerRadius="20"
-                                        Padding="10,8"
-                                        VerticalAlignment="Center">
-                                    <StackPanel Orientation="Horizontal"
-                                                Spacing="8">
-                                        <Border Width="10"
-                                                Height="10"
-                                                CornerRadius="5"
-                                                Background="{Binding ServerStatusColor}"
-                                                VerticalAlignment="Center" />
-                                        <TextBlock Text="{Binding IsServerOnline, Converter={x:Static conv:ServerStatusTextConverter.Instance}}"
-                                                   FontSize="14"
-                                                   FontWeight="Medium"
-                                                   Foreground="White"
-                                                   VerticalAlignment="Center" />
-                                    </StackPanel>
-                                </Border>
-                                <Button Background="Transparent"
-                                        Classes="icon-btn"
-                                        Click="MinimizeButton_Click"
-                                        CornerRadius="100">
-                                    <TextBlock FontSize="15.2"
-                                               Text="-" />
-                                </Button>
-                                <Button Background="Transparent"
-                                        Classes="icon-btn"
-                                        Click="CloseButton_Click"
-                                        CornerRadius="100">
-                                    <TextBlock FontSize="15.2"
-                                               Text="x" />
-                                </Button>
-                            </StackPanel>
+                            <!-- Chat Buttons moved to Top Chrome -->
+                            <!-- Window Controls Moved to Top Chrome -->
                             <!-- Empty Chat Welcome -->
                             <Grid Grid.Row="0"
                                   Margin="0,40,10,80"
@@ -1589,66 +1655,8 @@
                         Background="rgba(33, 35, 39, 0.5)"
                         CornerRadius="0"
                         IsVisible="{Binding IsSettingsView}">
-                    <Grid Margin="0,10,0,0"
-                          Background="Transparent"
-                          RowDefinitions="Auto,*">
-                        <!-- Top buttons for settings view -->
-                        <Grid Grid.Row="0"
-                              Margin="5"
-                              ColumnDefinitions="*,*">
-                            <!-- Left side - Back button -->
-                            <StackPanel Grid.Column="0"
-                                        Margin="15,0,0,0"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Top"
-                                        Orientation="Horizontal"
-                                        Spacing="2">
-                                <Button Background="rgba(19, 19, 19, 0.4)"
-                                        BorderBrush="rgba(255,255,255,0.05)"
-                                        BorderThickness="1"
-                                        Classes="icon-btn"
-                                        Command="{Binding NavigateBackCommand}"
-                                        CornerRadius="25">
-                                    <StackPanel Orientation="Horizontal"
-                                                Spacing="4"
-                                                VerticalAlignment="Center"
-                                                HorizontalAlignment="Center">
-                                        <Image Width="16"
-                                               Height="16"
-                                               VerticalAlignment="Center"
-                                               Source="{SvgImage /Assets/chevron-left-white.svg}" />
-                                        <TextBlock VerticalAlignment="Center"
-                                                   FontSize="15.2"
-                                                   Text="Back" />
-                                    </StackPanel>
-                                </Button>
-                            </StackPanel>
-                            <!-- Right side - Close and minimize buttons -->
-                            <StackPanel Grid.Column="1"
-                                        Margin="0,0,15,0"
-                                        HorizontalAlignment="Right"
-                                        VerticalAlignment="Top"
-                                        Orientation="Horizontal"
-                                        Spacing="2">
-                                <Button Background="Transparent"
-                                        Classes="icon-btn"
-                                        Click="MinimizeButton_Click"
-                                        CornerRadius="100">
-                                    <TextBlock FontSize="15.2"
-                                               Text="-" />
-                                </Button>
-                                <Button Background="Transparent"
-                                        Classes="icon-btn"
-                                        Click="CloseButton_Click"
-                                        CornerRadius="100">
-                                    <TextBlock FontSize="15.2"
-                                               Text="x" />
-                                </Button>
-                            </StackPanel>
-                        </Grid>
-                        <!-- Settings content -->
-                        <views:SettingsView Grid.Row="1"
-                                            DataContext="{Binding SettingsViewModel}" />
+                    <Grid Margin="0,40,0,0">
+                        <views:SettingsView DataContext="{Binding SettingsViewModel}" />
                     </Grid>
                 </Border>
             </Grid>

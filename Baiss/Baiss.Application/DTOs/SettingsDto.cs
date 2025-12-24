@@ -39,6 +39,8 @@ public class SettingsDto
     public string? AIChatModelId { get; set; }
     public string? AIEmbeddingModelId { get; set; }
 
+    public string HuggingFaceApiKey { get; set; } = string.Empty;
+
     public string TreeStructureSchedule { get; set; } = "0 0 0 * * ?";
     public bool TreeStructureScheduleEnabled { get; set; } = false;
 
@@ -117,6 +119,7 @@ public class UpdateAIModelSettingsDto
     public string? AIChatModelId { get; set; }
     public string? AIEmbeddingModelId { get; set; }
     public string? AIModelProviderScope { get; set; }
+    public string? HuggingFaceApiKey { get; set; }
 }
 
 

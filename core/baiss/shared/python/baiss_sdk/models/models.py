@@ -67,11 +67,18 @@ class HuggingFaceGgufFetcher:
             
             # Fetch README description
             readme_description = self._get_readme_description(model_id)
+
+            model_name = model_id.split('/')[-1]
+
+            if 'embedding' in model_name.lower():
+                purpose = 'embedding'
+            else:
+                purpose = 'chat'
             
             model_info = {
                 'model_id': model_id,
                 'author': model.author if hasattr(model, 'author') else model_id.split('/')[0],
-                'model_name': model_id.split('/')[-1],
+                'model_name': model_name,
                 'downloads': model.downloads if hasattr(model, 'downloads') else 0,
                 'likes': model.likes if hasattr(model, 'likes') else 0,
                 'description': readme_description,

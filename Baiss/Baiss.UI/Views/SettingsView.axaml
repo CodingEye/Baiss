@@ -27,6 +27,7 @@
         <conv:EqualityMultiValueConverter x:Key="EqualityMultiValueConverter" />
         <conv:ScopeEqualsConverter x:Key="ScopeEqualsConverter" />
         <conv:PercentageToOffsetConverter x:Key="PercentageToOffsetConverter" />
+        <conv:BoolToMaxLinesConverter x:Key="BoolToMaxLinesConverter" />
     </UserControl.Resources>
     <Grid ColumnDefinitions="200,*">
         <Grid Margin="5,10,5,10"
@@ -106,6 +107,10 @@
                                                 <Run Text=" *"
                                                      Foreground="#EF4444" />
                                             </TextBlock>
+                                            <TextBlock Text="Choose our tested chat model: Qwen3 family or choose from your downloaded models."
+                                                       FontSize="12"
+                                                       FontWeight="Medium"
+                                                       Foreground="Gray" />
                                             <ComboBox ItemsSource="{Binding DownloadedLocalChatModels}"
                                                       SelectedItem="{Binding SelectedLocalChatModel}"
                                                       FontSize="13"
@@ -130,65 +135,102 @@
                                                 <Run Text=" *"
                                                      Foreground="#EF4444" />
                                             </TextBlock>
-                                            <Border Background="{StaticResource ModelCardBackgroundBrush}"
-                                                    BorderBrush="rgba(255,255,255,0.1)"
-                                                    BorderThickness="1"
-                                                    CornerRadius="6"
-                                                    Padding="14,10">
-                                                <Grid ColumnDefinitions="*,Auto">
-                                                    <StackPanel Spacing="2">
-                                                        <TextBlock Text="{Binding SelectedLocalEmbeddingModel.DisplayText, TargetNullValue='No embedding attached'}"
-                                                                   FontSize="13"
-                                                                   Foreground="White"
-                                                                   TextWrapping="Wrap" />
-                                                        <TextBlock Text="{Binding SelectedLocalEmbeddingModel.Id, TargetNullValue='Choose an embedding to attach'}"
-                                                                   FontSize="11"
-                                                                   Foreground="#9CA3AF"
-                                                                   TextWrapping="Wrap" />
-                                                    </StackPanel>
-                                                    <Grid Grid.Column="1"
-                                                          VerticalAlignment="Center"
-                                                          HorizontalAlignment="Right">
-                                                        <Button Content="Download"
-                                                                Command="{Binding DownloadModelCommand}"
-                                                                CommandParameter="{Binding SelectedLocalEmbeddingModel}"
-                                                                FontSize="12"
-                                                                Padding="12,6"
-                                                                Background="#3B82F6"
-                                                                Foreground="White"
-                                                                BorderBrush="#3B82F6"
-                                                                BorderThickness="1"
-                                                                CornerRadius="6"
-                                                                IsVisible="{Binding SelectedLocalEmbeddingModel.ShowDownloadButton}" />
-                                                        <Button Content="Remove"
-                                                                Command="{Binding RemoveModelCommand}"
-                                                                CommandParameter="{Binding SelectedLocalEmbeddingModel}"
-                                                                FontSize="12"
-                                                                Padding="12,6"
-                                                                Background="#DC2626"
-                                                                Foreground="White"
-                                                                BorderBrush="#DC2626"
-                                                                BorderThickness="1"
-                                                                CornerRadius="6"
-                                                                IsVisible="{Binding SelectedLocalEmbeddingModel.ShowDeleteButton}" />
-                                                        <ProgressBar Width="48"
-                                                                     Height="3"
-                                                                     Minimum="0"
-                                                                     Maximum="100"
-                                                                     Value="{Binding SelectedLocalEmbeddingModel.DownloadProgress}"
-                                                                     VerticalAlignment="Center"
-                                                                     HorizontalAlignment="Left"
-                                                                     IsVisible="{Binding SelectedLocalEmbeddingModel.ShowDownloadSpinner}" />
-                                                    </Grid>
-                                                </Grid>
-                                            </Border>
+                                            <TextBlock Text="Choose our tested embedding model: Qwen3-Embedding-0.6B or choose from your downloaded models."
+                                                       FontSize="12"
+                                                       FontWeight="Medium"
+                                                       Foreground="Gray" />
+                                            <ComboBox ItemsSource="{Binding DownloadedLocalEmbeddingModels}"
+                                                      SelectedItem="{Binding SelectedLocalEmbeddingModel}"
+                                                      FontSize="13"
+                                                      MinHeight="38"
+                                                      Height="38"
+                                                      VerticalContentAlignment="Center"
+                                                      PlaceholderText="No downloaded embedding models available"
+                                                      HorizontalAlignment="Stretch">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding DisplayText}"
+                                                                   VerticalAlignment="Center"
+                                                                   FontSize="13" />
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
                                         </StackPanel>
+
                                         <StackPanel Spacing="8">
+                                            <TextBlock Text="Hugging Face API Key"
+                                                       FontSize="13.4"
+                                                       FontWeight="Medium" />
+                                            <TextBlock Text="Token is required only when you need to accept a license agreement to download the models."
+                                                       FontSize="12"
+                                                       FontWeight="Medium"
+                                                       Foreground="Gray" />
+                                            <Grid ColumnDefinitions="*,Auto,Auto">
+                                                <TextBox Grid.Column="0"
+                                                         Watermark="Enter your Hugging Face API Key"
+                                                         Text="{Binding HuggingFaceApiKey}"
+                                                         PasswordChar="*"
+                                                         MinHeight="38"
+                                                         Height="38"
+                                                         VerticalContentAlignment="Center"
+                                                         HorizontalAlignment="Stretch"
+                                                         Background="{StaticResource ModelCardBackgroundBrush}"
+                                                         BorderBrush="rgba(255,255,255,0.1)"
+                                                         BorderThickness="1"
+                                                         CornerRadius="4"
+                                                         Padding="10,8" />
+                                                <Button Grid.Column="1"
+                                                        Content="Save"
+                                                        Command="{Binding SaveHuggingFaceTokenCommand}"
+                                                        Margin="8,0,0,0"
+                                                        Padding="12,8"
+                                                        Background="#3B82F6"
+                                                        Foreground="White"
+                                                        BorderThickness="0"
+                                                        CornerRadius="4" />
+                                                <Button Grid.Column="2"
+                                                        Content="Delete"
+                                                        Command="{Binding DeleteHuggingFaceTokenCommand}"
+                                                        IsVisible="{Binding IsHuggingFaceTokenSaved}"
+                                                        Margin="8,0,0,0"
+                                                        Padding="12,8"
+                                                        Background="#EF4444"
+                                                        Foreground="White"
+                                                        BorderThickness="0"
+                                                        CornerRadius="4" />
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="Get other Models from Huggingface"
+                                                       FontSize="13.4"
+                                                       FontWeight="Medium" />
+                                            <TextBlock Text="We only accept GGUF models, paste model id below in the format name/model_id, example: unsloth/gemma-3-4b-it-GGUF."
+                                                       FontSize="12"
+                                                       FontWeight="Medium"
+                                                       Foreground="Gray" />
+                                            <!-- External Search Bar -->
+                                            <TextBox Watermark="Search other models..."
+                                                     Text="{Binding ExternalModelSearchText}"
+                                                     MinHeight="38"
+                                                     Height="38"
+                                                     VerticalContentAlignment="Center"
+                                                     HorizontalAlignment="Stretch"
+                                                     Background="{StaticResource ModelCardBackgroundBrush}"
+                                                     BorderBrush="rgba(255,255,255,0.1)"
+                                                     BorderThickness="1"
+                                                     CornerRadius="4"
+                                                     Padding="10,8">
+                                                <TextBox.KeyBindings>
+                                                    <KeyBinding Gesture="Enter" Command="{Binding SearchExternalModelCommand}" />
+                                                </TextBox.KeyBindings>
+                                            </TextBox>
+
                                             <TextBlock Text="Available Models"
                                                        FontSize="13.4"
                                                        FontWeight="Medium" />
-                                            <!-- Search Bar -->
-                                            <TextBox Watermark="Search models..."
+                                            <!-- Filter Bar -->
+                                            <TextBox Watermark="Filter available models..."
                                                      Text="{Binding ModelSearchText}"
                                                      MinHeight="38"
                                                      Height="38"
@@ -198,263 +240,175 @@
                                                      BorderBrush="rgba(255,255,255,0.1)"
                                                      BorderThickness="1"
                                                      CornerRadius="4"
-                                                     Padding="10,8" />
-                                            <!-- Models list as individual cards (bound) -->
-                                            <ItemsControl ItemsSource="{Binding FilteredDownloadedLocalModels}"
-                                                          IsVisible="{Binding HasDownloadedLocalModels}">
-                                                <ItemsControl.ItemsPanel>
-                                                    <ItemsPanelTemplate>
-                                                        <StackPanel Spacing="8" />
-                                                    </ItemsPanelTemplate>
-                                                </ItemsControl.ItemsPanel>
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <Border CornerRadius="8"
-                                                                Padding="16,12"
-                                                                BorderBrush="rgba(255,255,255,0.1)"
-                                                                BorderThickness="1">
-                                                            <Border.Background>
-                                                                <LinearGradientBrush StartPoint="0%,0%"
-                                                                                     EndPoint="100%,100%">
-                                                                    <GradientStop Color="rgba(15,23,42,0.4)"
-                                                                                  Offset="0.0" />
-                                                                    <GradientStop Color="rgba(30,41,59,0.2)"
-                                                                                  Offset="1.0" />
-                                                                </LinearGradientBrush>
-                                                            </Border.Background>
-                                                            <StackPanel Spacing="0">
-                                                                <Grid ColumnDefinitions="*,Auto"
-                                                                      RowDefinitions="Auto,Auto,Auto">
-                                                                    <!-- Title -->
-                                                                    <TextBlock Grid.Row="0"
-                                                                               Grid.Column="0"
-                                                                               Text="{Binding DisplayText}"
-                                                                               FontSize="15.2"
-                                                                               FontWeight="SemiBold"
-                                                                               Foreground="White" />
-                                                                    <!-- Description -->
-                                                                    <TextBlock Grid.Row="1"
-                                                                               Grid.Column="0"
-                                                                               Text="{Binding Description}"
-                                                                               FontSize="12"
-                                                                               Foreground="#9CA3AF"
-                                                                               TextWrapping="Wrap"
-                                                                               Margin="0,6,0,0" />
-                                                                    <!-- By Author Downloads on left -->
-                                                                    <StackPanel Grid.Row="2"
-                                                                                Grid.Column="0"
-                                                                                Orientation="Horizontal"
-                                                                                Spacing="10"
-                                                                                VerticalAlignment="Center"
-                                                                                Margin="0,6,0,0">
-                                                                        <TextBlock Text="By"
-                                                                                   FontSize="12"
-                                                                                   Foreground="#6B7280"
-                                                                                   VerticalAlignment="Center" />
-                                                                        <TextBlock Text="{Binding Author}"
-                                                                                   FontSize="12"
-                                                                                   Foreground="#9CA3AF"
-                                                                                   VerticalAlignment="Center" />
-                                                                        <TextBlock Text="•"
-                                                                                   FontSize="12"
-                                                                                   Foreground="#6B7280"
-                                                                                   VerticalAlignment="Center" />
-                                                                        <TextBlock Text="{Binding DownloadsFormatted}"
-                                                                                   FontSize="12"
-                                                                                   Foreground="#9CA3AF"
-                                                                                   VerticalAlignment="Center" />
-                                                                        <TextBlock Text="downloads"
-                                                                                   FontSize="12"
-                                                                                   Foreground="#6B7280"
-                                                                                   VerticalAlignment="Center" />
-                                                                    </StackPanel>
-                                                                    <!-- Variants toggle on RIGHT BOTTOM -->
-                                                                    <ToggleButton Grid.Row="2"
-                                                                                  Grid.Column="0"
-                                                                                  Grid.ColumnSpan="2"
-                                                                                  x:Name="ShowVariantsToggle"
-                                                                                  Padding="0"
-                                                                                  Background="Transparent"
-                                                                                  BorderThickness="0"
-                                                                                  VerticalAlignment="Center"
-                                                                                  HorizontalAlignment="Right"
-                                                                                  Margin="0,0,100,0">
-                                                                        <ToggleButton.Resources>
-                                                                            <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver"
-                                                                                             Color="Transparent" />
-                                                                            <SolidColorBrush x:Key="ToggleButtonBackgroundPressed"
-                                                                                             Color="Transparent" />
-                                                                            <SolidColorBrush x:Key="ToggleButtonBackgroundChecked"
-                                                                                             Color="Transparent" />
-                                                                            <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver"
-                                                                                             Color="Transparent" />
-                                                                        </ToggleButton.Resources>
-                                                                        <StackPanel Orientation="Horizontal"
-                                                                                    Spacing="6"
-                                                                                    VerticalAlignment="Center">
-                                                                            <ToggleSwitch IsChecked="{Binding #ShowVariantsToggle.IsChecked}"
-                                                                                          OnContent=""
-                                                                                          OffContent="" />
-                                                                            <TextBlock Text="Variants"
-                                                                                       FontSize="12"
-                                                                                       Foreground="#9CA3AF"
-                                                                                       VerticalAlignment="Center" />
+                                                     Padding="10,8">
+                                            </TextBox>
+
+                                                                                                                <!-- Models list as individual cards (bound) -->
+                                                        <ItemsControl ItemsSource="{Binding FilteredDownloadedLocalModels}"
+                                                                      IsVisible="{Binding HasDownloadedLocalModels}">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <StackPanel Spacing="8" />
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Border CornerRadius="8"
+                                                                            Padding="16,12"
+                                                                            BorderBrush="rgba(255,255,255,0.1)"
+                                                                            BorderThickness="1">
+                                                                        <Border.Background>
+                                                                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                                                                <GradientStop Color="rgba(15,23,42,0.4)" Offset="0.0" />
+                                                                                <GradientStop Color="rgba(30,41,59,0.2)" Offset="1.0" />
+                                                                            </LinearGradientBrush>
+                                                                        </Border.Background>
+                                                                        <StackPanel Spacing="0">
+                                                                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+                                                                                <!-- Title -->
+                                                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding DisplayText}" FontSize="15.2" FontWeight="SemiBold" Foreground="White" />
+
+                                                                                <!-- Description -->
+                                                                                <Grid Grid.Row="1" Grid.Column="0" Margin="0,6,0,0">
+                                                                                    <TextBlock Text="{Binding Description}"
+                                                                                               FontSize="12"
+                                                                                               Foreground="#9CA3AF"
+                                                                                               TextWrapping="Wrap"
+                                                                                               MaxLines="{Binding IsDescriptionExpanded, Converter={StaticResource BoolToMaxLinesConverter}}"
+                                                                                               TextTrimming="CharacterEllipsis" />
+                                                                                    <Button Command="{Binding ToggleDescriptionExpandedCommand}"
+                                                                                            IsVisible="{Binding IsDescriptionLong}"
+                                                                                            HorizontalAlignment="Right"
+                                                                                            VerticalAlignment="Bottom"
+                                                                                            Background="Transparent"
+                                                                                            BorderThickness="0"
+                                                                                            Padding="4,0"
+                                                                                            Foreground="#3B82F6"
+                                                                                            FontSize="16"
+                                                                                            FontWeight="Bold"
+                                                                                            Margin="0,0,0,-4">
+                                                                                        <Panel>
+                                                                                            <TextBlock Text="+" IsVisible="{Binding !IsDescriptionExpanded}"/>
+                                                                                            <TextBlock Text="-" IsVisible="{Binding IsDescriptionExpanded}"/>
+                                                                                        </Panel>
+                                                                                    </Button>
+                                                                                </Grid>
+
+                                                                                <!-- By Author Downloads on left -->
+                                                                                <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" Margin="0,6,0,0">
+                                                                                    <TextBlock Text="By" FontSize="12" Foreground="#6B7280" VerticalAlignment="Center" />
+                                                                                    <TextBlock Text="{Binding Author}" FontSize="12" Foreground="#9CA3AF" VerticalAlignment="Center" />
+                                                                                    <TextBlock Text="•" FontSize="12" Foreground="#6B7280" VerticalAlignment="Center" />
+                                                                                    <TextBlock Text="{Binding DownloadsFormatted}" FontSize="12" Foreground="#9CA3AF" VerticalAlignment="Center" />
+                                                                                    <TextBlock Text="downloads" FontSize="12" Foreground="#6B7280" VerticalAlignment="Center" />
+                                                                                </StackPanel>
+
+                                                                                <!-- Variants toggle on RIGHT BOTTOM -->
+                                                                                <ToggleButton Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" x:Name="ShowVariantsToggle" Padding="0" Background="Transparent" BorderThickness="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,100,0">
+                                                                                    <ToggleButton.Resources>
+                                                                                        <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="Transparent" />
+                                                                                        <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="Transparent" />
+                                                                                        <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="Transparent" />
+                                                                                        <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="Transparent" />
+                                                                                    </ToggleButton.Resources>
+                                                                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                                                        <ToggleSwitch IsChecked="{Binding #ShowVariantsToggle.IsChecked}" OnContent="" OffContent="" />
+                                                                                        <TextBlock Text="Variants" FontSize="12" Foreground="#9CA3AF" VerticalAlignment="Center" />
+                                                                                    </StackPanel>
+                                                                                </ToggleButton>
+
+                                                                                <!-- Size and buttons on top right -->
+                                                                                <StackPanel Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Orientation="Horizontal" Spacing="12" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,4,0,0">
+                                                                                    <TextBlock Text="{Binding Size}" FontSize="13" Foreground="#9CA3AF" VerticalAlignment="Center" />
+                                                                                    <Button Content="Download" Padding="12,6" Background="#3B82F6" Foreground="White" BorderThickness="0" CornerRadius="6" FontSize="13" FontWeight="Medium" Command="{Binding $parent[UserControl].DataContext.DownloadModelCommand}" CommandParameter="{Binding}" IsVisible="{Binding ShowDownloadButton}">
+                                                                                        <Button.Resources>
+                                                                                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#2563EB" />
+                                                                                            <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#1D4ED8" />
+                                                                                        </Button.Resources>
+                                                                                    </Button>
+                                                                                    <Button Content="Remove" Padding="12,6" Background="#EF4444" Foreground="White" BorderThickness="0" CornerRadius="6" FontSize="13" FontWeight="Medium" Command="{Binding $parent[UserControl].DataContext.RemoveModelCommand}" CommandParameter="{Binding}" IsVisible="{Binding ShowDeleteButton}">
+                                                                                        <Button.Resources>
+                                                                                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#DC2626" />
+                                                                                            <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#B91C1C" />
+                                                                                        </Button.Resources>
+                                                                                    </Button>
+                                                                                    <ProgressBar Width="48" Height="3" Minimum="0" Maximum="100" Value="{Binding DownloadProgress}" VerticalAlignment="Center" HorizontalAlignment="Left" IsVisible="{Binding ShowDownloadSpinner}" />
+                                                                                </StackPanel>
+                                                                            </Grid>
+                                                                            <StackPanel Margin="0,12,0,0" IsVisible="{Binding #ShowVariantsToggle.IsChecked}">
+                                                                                <ItemsControl ItemsSource="{Binding Variants}">
+                                                                                    <ItemsControl.ItemsPanel>
+                                                                                        <ItemsPanelTemplate>
+                                                                                            <StackPanel Spacing="0" />
+                                                                                        </ItemsPanelTemplate>
+                                                                                    </ItemsControl.ItemsPanel>
+                                                                                    <ItemsControl.ItemTemplate>
+                                                                                        <DataTemplate>
+                                                                                            <Border Margin="0,6" Padding="0,0,6,0">
+                                                                                                <Grid ColumnDefinitions="*,Auto,Auto">
+                                                                                                    <TextBlock Grid.Column="0" Text="{Binding ShortDisplayName}" FontSize="13" Foreground="White" VerticalAlignment="Center" />
+                                                                                                    <TextBlock Grid.Column="1" Text="{Binding SizeText}" FontSize="12" Foreground="#6B7280" Margin="0,0,12,0" VerticalAlignment="Center" />
+                                                                                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                                                                        <!-- Download icon when not downloading or downloaded -->
+                                                                                                        <Button Width="20"
+                                                                                                                Height="20"
+                                                                                                                Padding="0"
+                                                                                                                Background="Transparent"
+                                                                                                                BorderThickness="0"
+                                                                                                                Command="{Binding $parent[UserControl].DataContext.DownloadVariantCommand}"
+                                                                                                                CommandParameter="{Binding}"
+                                                                                                                IsVisible="{Binding ShowDownload}">
+                                                                                                            <Button.Resources>
+                                                                                                                <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="Transparent" />
+                                                                                                                <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="Transparent" />
+                                                                                                            </Button.Resources>
+                                                                                                            <svg:Svg Path="/Assets/Download.svg" Width="16" Height="16" />
+                                                                                                        </Button>
+
+                                                                                                        <!-- Progress while downloading -->
+                                                                                                        <ProgressBar Width="48"
+                                                                                                                     Height="3"
+                                                                                                                     Minimum="0"
+                                                                                                                     Maximum="100"
+                                                                                                                     Value="{Binding DownloadProgress}"
+                                                                                                                     VerticalAlignment="Center"
+                                                                                                                     HorizontalAlignment="Left"
+                                                                                                                     IsVisible="{Binding IsDownloading}" />
+
+                                                                                                        <!-- Trash when downloaded -->
+                                                                                                        <Button Width="20"
+                                                                                                                Height="20"
+                                                                                                                Padding="0"
+                                                                                                                Background="Transparent"
+                                                                                                                BorderThickness="0"
+                                                                                                                Command="{Binding $parent[UserControl].DataContext.RemoveModelCommand}"
+                                                                                                                CommandParameter="{Binding ParentModel}"
+                                                                                                                IsVisible="{Binding IsDownloaded}">
+                                                                                                            <Button.Resources>
+                                                                                                                <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="Transparent" />
+                                                                                                                <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="Transparent" />
+                                                                                                            </Button.Resources>
+                                                                                                            <svg:Svg Path="/Assets/trash.svg" Width="16" Height="16" />
+                                                                                                        </Button>
+                                                                                                    </StackPanel>
+                                                                                                </Grid>
+                                                                                            </Border>
+                                                                                        </DataTemplate>
+                                                                                    </ItemsControl.ItemTemplate>
+                                                                                </ItemsControl>
+                                                                            </StackPanel>
                                                                         </StackPanel>
-                                                                    </ToggleButton>
-                                                                    <!-- Size and buttons on top right -->
-                                                                    <StackPanel Grid.Row="0"
-                                                                                Grid.RowSpan="3"
-                                                                                Grid.Column="1"
-                                                                                Orientation="Horizontal"
-                                                                                Spacing="12"
-                                                                                HorizontalAlignment="Right"
-                                                                                VerticalAlignment="Top"
-                                                                                Margin="0,4,0,0">
-                                                                        <TextBlock Text="{Binding Size}"
-                                                                                   FontSize="13"
-                                                                                   Foreground="#9CA3AF"
-                                                                                   VerticalAlignment="Center" />
-                                                                        <Button Content="Download"
-                                                                                Padding="12,6"
-                                                                                Background="#3B82F6"
-                                                                                Foreground="White"
-                                                                                BorderThickness="0"
-                                                                                CornerRadius="6"
-                                                                                FontSize="13"
-                                                                                FontWeight="Medium"
-                                                                                Command="{Binding $parent[UserControl].DataContext.DownloadModelCommand}"
-                                                                                CommandParameter="{Binding}"
-                                                                                IsVisible="{Binding ShowDownloadButton}">
-                                                                            <Button.Resources>
-                                                                                <SolidColorBrush x:Key="ButtonBackgroundPointerOver"
-                                                                                                 Color="#2563EB" />
-                                                                                <SolidColorBrush x:Key="ButtonBackgroundPressed"
-                                                                                                 Color="#1D4ED8" />
-                                                                            </Button.Resources>
-                                                                        </Button>
-                                                                        <Button Content="Remove"
-                                                                                Padding="12,6"
-                                                                                Background="#EF4444"
-                                                                                Foreground="White"
-                                                                                BorderThickness="0"
-                                                                                CornerRadius="6"
-                                                                                FontSize="13"
-                                                                                FontWeight="Medium"
-                                                                                Command="{Binding $parent[UserControl].DataContext.RemoveModelCommand}"
-                                                                                CommandParameter="{Binding}"
-                                                                                IsVisible="{Binding ShowDeleteButton}">
-                                                                            <Button.Resources>
-                                                                                <SolidColorBrush x:Key="ButtonBackgroundPointerOver"
-                                                                                                 Color="#DC2626" />
-                                                                                <SolidColorBrush x:Key="ButtonBackgroundPressed"
-                                                                                                 Color="#B91C1C" />
-                                                                            </Button.Resources>
-                                                                        </Button>
-                                                                        <ProgressBar Width="48"
-                                                                                     Height="3"
-                                                                                     Minimum="0"
-                                                                                     Maximum="100"
-                                                                                     Value="{Binding DownloadProgress}"
-                                                                                     VerticalAlignment="Center"
-                                                                                     HorizontalAlignment="Left"
-                                                                                     IsVisible="{Binding ShowDownloadSpinner}" />
-                                                                    </StackPanel>
-                                                                </Grid>
-                                                                <StackPanel Margin="0,12,0,0"
-                                                                            IsVisible="{Binding #ShowVariantsToggle.IsChecked}">
-                                                                    <ItemsControl ItemsSource="{Binding Variants}">
-                                                                        <ItemsControl.ItemsPanel>
-                                                                            <ItemsPanelTemplate>
-                                                                                <StackPanel Spacing="0" />
-                                                                            </ItemsPanelTemplate>
-                                                                        </ItemsControl.ItemsPanel>
-                                                                        <ItemsControl.ItemTemplate>
-                                                                            <DataTemplate>
-                                                                                <Border Margin="0,6"
-                                                                                        Padding="0,0,6,0">
-                                                                                    <Grid ColumnDefinitions="*,Auto,Auto">
-                                                                                        <TextBlock Grid.Column="0"
-                                                                                                   Text="{Binding ShortDisplayName}"
-                                                                                                   FontSize="13"
-                                                                                                   Foreground="White"
-                                                                                                   VerticalAlignment="Center" />
-                                                                                        <TextBlock Grid.Column="1"
-                                                                                                   Text="{Binding SizeText}"
-                                                                                                   FontSize="12"
-                                                                                                   Foreground="#6B7280"
-                                                                                                   Margin="0,0,12,0"
-                                                                                                   VerticalAlignment="Center" />
-                                                                                        <StackPanel Grid.Column="2"
-                                                                                                    Orientation="Horizontal"
-                                                                                                    Spacing="6"
-                                                                                                    VerticalAlignment="Center">
-                                                                                            <!-- Download icon when not downloading or downloaded -->
-                                                                                            <Button Width="20"
-                                                                                                    Height="20"
-                                                                                                    Padding="0"
-                                                                                                    Background="Transparent"
-                                                                                                    BorderThickness="0"
-                                                                                                    Command="{Binding $parent[UserControl].DataContext.DownloadVariantCommand}"
-                                                                                                    CommandParameter="{Binding}"
-                                                                                                    IsVisible="{Binding ShowDownload}">
-                                                                                                <Button.Resources>
-                                                                                                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver"
-                                                                                                                     Color="Transparent" />
-                                                                                                    <SolidColorBrush x:Key="ButtonBackgroundPressed"
-                                                                                                                     Color="Transparent" />
-                                                                                                </Button.Resources>
-                                                                                                <svg:Svg Path="/Assets/Download.svg"
-                                                                                                         Width="16"
-                                                                                                         Height="16" />
-                                                                                            </Button>
-                                                                                            <!-- Progress while downloading -->
-                                                                                            <ProgressBar Width="48"
-                                                                                                         Height="3"
-                                                                                                         Minimum="0"
-                                                                                                         Maximum="100"
-                                                                                                         Value="{Binding DownloadProgress}"
-                                                                                                         VerticalAlignment="Center"
-                                                                                                         HorizontalAlignment="Left"
-                                                                                                         IsVisible="{Binding IsDownloading}" />
-                                                                                            <!-- Trash when downloaded -->
-                                                                                            <Button Width="20"
-                                                                                                    Height="20"
-                                                                                                    Padding="0"
-                                                                                                    Background="Transparent"
-                                                                                                    BorderThickness="0"
-                                                                                                    Command="{Binding $parent[UserControl].DataContext.RemoveModelCommand}"
-                                                                                                    CommandParameter="{Binding ParentModel}"
-                                                                                                    IsVisible="{Binding IsDownloaded}">
-                                                                                                <Button.Resources>
-                                                                                                    <SolidColorBrush x:Key="ButtonBackgroundPointerOver"
-                                                                                                                     Color="Transparent" />
-                                                                                                    <SolidColorBrush x:Key="ButtonBackgroundPressed"
-                                                                                                                     Color="Transparent" />
-                                                                                                </Button.Resources>
-                                                                                                <svg:Svg Path="/Assets/trash.svg"
-                                                                                                         Width="16"
-                                                                                                         Height="16" />
-                                                                                            </Button>
-                                                                                        </StackPanel>
-                                                                                    </Grid>
-                                                                                </Border>
-                                                                            </DataTemplate>
-                                                                        </ItemsControl.ItemTemplate>
-                                                                    </ItemsControl>
-                                                                </StackPanel>
-                                                            </StackPanel>
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                            <!-- Show "No available models yet" if empty -->
-                                            <!-- Show "No available models yet" if empty -->
-                                            <TextBlock Text="No available models yet."
-                                                       FontSize="13.4"
-                                                       Foreground="{StaticResource SettingsSecondaryTextBrush}"
-                                                       HorizontalAlignment="Center"
-                                                       Margin="0,20"
-                                                       IsVisible="{Binding HasDownloadedLocalModels, Converter={x:Static BoolConverters.Not}}" />
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                        <!-- Show "No available models yet" if empty --><!-- Show "No available models yet" if empty -->
+                                                        <TextBlock Text="No available models yet."
+                                                                   FontSize="13.4"
+                                                                   Foreground="{StaticResource SettingsSecondaryTextBrush}"
+                                                                   HorizontalAlignment="Center"
+                                                                   Margin="0,20"
+                                                                   IsVisible="{Binding HasDownloadedLocalModels, Converter={x:Static BoolConverters.Not}}" />
                                         </StackPanel>
                                     </StackPanel>
                                 </StackPanel>
