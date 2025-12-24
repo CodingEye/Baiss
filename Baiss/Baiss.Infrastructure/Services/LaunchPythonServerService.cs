@@ -42,7 +42,7 @@ public class LaunchPythonServerService : ILaunchPythonServerService
 			// check if mac or windows
 			if (OperatingSystem.IsMacOS())
 			{
-				pythonPath = config?.PythonPath + "python3" ?? "python";
+				pythonPath = config?.PythonPath + "python3.12" ?? "python";
 			}
 			else if (OperatingSystem.IsLinux())
 			{
