@@ -535,6 +535,18 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OnContentAreaPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        // Attempt to clear selection/focus by focusing the main window
+        this.Focus();
+    }
+
+    private void OnTitleBarButtonPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        // Prevent the drag handler (OnRootPointerPressed) from seeing this event
+        e.Handled = true;
+    }
+
     private void OnComboBoxPointerPressed(object? sender, PointerPressedEventArgs e)
     {
         if (e.Source is not Control sourceControl)
