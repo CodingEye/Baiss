@@ -107,6 +107,10 @@
                                                 <Run Text=" *"
                                                      Foreground="#EF4444" />
                                             </TextBlock>
+                                            <TextBlock Text="Choose our tested chat model: Qwen3 family or choose from your downloaded models."
+                                                       FontSize="12"
+                                                       FontWeight="Medium"
+                                                       Foreground="Gray" />
                                             <ComboBox ItemsSource="{Binding DownloadedLocalChatModels}"
                                                       SelectedItem="{Binding SelectedLocalChatModel}"
                                                       FontSize="13"
@@ -131,6 +135,10 @@
                                                 <Run Text=" *"
                                                      Foreground="#EF4444" />
                                             </TextBlock>
+                                            <TextBlock Text="Choose our tested embedding model: Qwen3-Embedding-0.6B or choose from your downloaded models."
+                                                       FontSize="12"
+                                                       FontWeight="Medium"
+                                                       Foreground="Gray" />
                                             <ComboBox ItemsSource="{Binding DownloadedLocalEmbeddingModels}"
                                                       SelectedItem="{Binding SelectedLocalEmbeddingModel}"
                                                       FontSize="13"
