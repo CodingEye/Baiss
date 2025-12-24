@@ -539,6 +539,7 @@ public partial class MainWindow : Window
     {
         // Attempt to clear selection/focus by focusing the main window
         this.Focus();
+        MessageContentView.ClearAllSelections();
     }
 
     private void OnTitleBarButtonPointerPressed(object? sender, PointerPressedEventArgs e)
