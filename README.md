@@ -1,12 +1,12 @@
 <div align="center">
 
 ```text
-   ██████╗  █████╗ ██╗███████╗███████╗
-   ██╔══██╗██╔══██╗██║██╔════╝██╔════╝
-   ██████╔╝███████║██║███████╗███████╗
-   ██╔══██╗██╔══██║██║╚════██║╚════██║
-   ██████╔╝██║  ██║██║███████║███████║
-   ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝╚══════╝
+                              ██████╗  █████╗ ██╗███████╗███████╗
+                              ██╔══██╗██╔══██╗██║██╔════╝██╔════╝
+                              ██████╔╝███████║██║███████╗███████╗
+                              ██╔══██╗██╔══██║██║╚════██║╚════██║
+                              ██████╔╝██║  ██║██║███████║███████║
+                              ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝╚══════╝
 ```
 
 
@@ -29,21 +29,21 @@ https://github.com/user-attachments/assets/0b36d021-e2d8-4410-9cfd-67019821169d
 
 ---
 
-## 💡 Why Baiss?
+## Why Baiss?
 
 In an era where data privacy is paramount, **Baiss** brings the power of Large Language Models (LLMs) and Retrieval-Augmented Generation (RAG) directly to your desktop—**running entirely locally**.
 
 No cloud subscriptions, no data leaks, just pure AI productivity. Whether you're a developer needing a coding assistant or a researcher organizing documents, Baiss provides a unified, cross-platform interface to interact with your data and models.
 
-## ⚡ Key Features
+## Key Features
 
-- **🔒 Privacy First**: Runs local LLMs (via `llama.cpp`) and vector search on your machine. Your data never leaves your device.
-- **🧠 Advanced RAG**: Built-in Retrieval-Augmented Generation using **DuckDB** for high-performance vector storage and **FlashRank** for re-ranking.
-- **🎨 Cross-Platform UI**: A beautiful, responsive interface built with **Avalonia UI**, running natively on macOS, Windows, and Linux.
-- **🔌 Extensible Architecture**: Designed with **Clean Architecture** principles, making it easy for developers to add new AI providers, tools, or plugins.
-- **🐍 Python Power**: Leverages a robust Python backend (FastAPI) for heavy AI lifting, seamlessly integrated with the .NET frontend.
+- **Privacy First**: Runs local LLMs (via `llama.cpp`) and vector search on your machine. Your data never leaves your device.
+- **Advanced RAG**: Built-in Retrieval-Augmented Generation using **DuckDB** for high-performance vector storage and **FlashRank** for re-ranking.
+- **Cross-Platform UI**: A beautiful, responsive interface built with **Avalonia UI**, running natively on macOS, Windows, and Linux.
+- **Extensible Architecture**: Designed with **Clean Architecture** principles, making it easy for developers to add new AI providers, tools, or plugins.
+- **Python Power**: Leverages a robust Python backend (FastAPI) for heavy AI lifting, seamlessly integrated with the .NET frontend.
 
-## 🛠️ The Tech Stack
+## The Tech Stack
 
 **Frontend & Core:**
 - **C# / .NET 8**: The backbone of the application.
@@ -56,7 +56,7 @@ No cloud subscriptions, no data leaks, just pure AI productivity. Whether you're
 - **Llama.cpp**: For running quantized LLMs locally with hardware acceleration.
 - **HuggingFace & Transformers**: For embeddings and model management.
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -93,7 +93,7 @@ dotnet run
 
 *Note: On the first run, Baiss may need to download default models or configure the local database. Please check the console output for status updates.*
 
-## 📂 Project Structure
+## Project Structure
 
 Here's a quick look at the codebase organization:
 
@@ -109,7 +109,7 @@ Baiss/
         └── shared/python/baiss_agents/
 ```
 
-## 🤝 Contributing
+## Contributing
 
 We love contributions! Whether it's fixing a bug, improving the UI, or adding support for a new AI model, your help is welcome.
 
